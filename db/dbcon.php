@@ -1,13 +1,12 @@
 <?php
-$host = 'localhost';
-$dbname = "re_sghms";
-$dbuser = 'root';
-$dbpass = '';
+$servername="localhost"; 
+$username = "root"; 
+$password = ""; 
+$dbname = "re_sghms"; 
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $dbuser, $dbpass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
-}
+$conn = new mysqli($servername, $username, $password, $dbname); 
+if($conn->connect_error){ 
+    die("Connection failed: ". $conn->connect_error); 
+} 
+//echo "Connected Successfully"; 
 ?>

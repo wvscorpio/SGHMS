@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 01, 2026 at 04:30 PM
+-- Generation Time: Jan 02, 2026 at 07:07 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -32,7 +32,9 @@ CREATE TABLE `appointment` (
   `appointmentDate` date NOT NULL,
   `appointmentTime` time(6) NOT NULL,
   `reason` varchar(500) NOT NULL,
-  `status` varchar(50) NOT NULL
+  `status` varchar(50) NOT NULL,
+  `patientID` int(100) NOT NULL,
+  `doctorID` int(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
