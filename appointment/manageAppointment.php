@@ -1,9 +1,9 @@
 <?php
-require 'db/dbcon.php';
+include '../db/dbcon.php';
 
 // ===================== HANDLE CRUD ===================== //
 // DOCTOR CRUD
-if (isset($_POST['save_doctor'])) {
+/*if (isset($_POST['save_doctor'])) {
     $id = $_POST['doctorID'] ?? null;
     $name = $_POST['name'];
     $specialization = $_POST['specialization'];
@@ -92,6 +92,7 @@ $appointments = $pdo->query("
     JOIN doctor d ON a.doctorID = d.doctorID
 ")->fetchAll(PDO::FETCH_ASSOC);
 
+
 // FUNCTION FOR BADGE COLORS
 function getStatusColor($status) {
     switch($status) {
@@ -101,7 +102,7 @@ function getStatusColor($status) {
         case "cancelled": return "red";
         default: return "gray";
     }
-}
+}*/
 ?>
 
 
@@ -110,7 +111,7 @@ function getStatusColor($status) {
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Staff Manage Appointments</title>
-        <link rel="stylesheet" href="#" />
+        <link rel="stylesheet" href="../css/style.css" />
 
         <style>
             body { font-family: Arial; background:#f5f5f5; }
