@@ -1,0 +1,150 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", sans-serif;
+}
+
+body {
+    background-color: #f6f7fb;
+    color: #222;
+}
+
+/* ===== HEADER ===== */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background: white;
+    border-bottom: 1px solid #ddd;
+}
+
+.header h1 {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.header p {
+    color: #666;
+    margin-top: 5px;
+}
+
+.header button {
+    padding: 10px 18px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* ===== DASHBOARD BUTTON ===== */
+.button_add_apt {
+    display: flex;
+    justify-content: flex-end;
+    padding: 25px 40px;
+}
+
+.button_add_apt button {
+    background: #0b0d2a;
+    color: white;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.button_add_apt button:hover {
+    background: #161a3a;
+}
+
+/* ===== TOP NAVIGATION ===== */
+.topnav {
+    background-color: #333;
+    overflow: hidden;
+}
+
+/* Style the links inside the navigation bar */
+.topnav a {
+    float: left;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+}
+
+/* Change the color of links on hover */
+.topnav a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+/* Add a color to the active/current link */
+.topnav a.active {
+    background-color: #04AA6D;
+    color: white;
+}
+
+/* ===== BOOKING CARD ===== */
+.card {
+    width: 650px;
+    background: white;
+    margin: 0 auto 50px auto;
+    padding: 30px;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.card h2 {
+    margin-bottom: 8px;
+}
+
+.card label {
+    font-weight: 500;
+    display: block;
+    margin-top: 15px;
+}
+
+.card input,
+.card select,
+.card textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+.card textarea {
+    resize: none;
+    height: 90px;
+}
+
+/* Buttons inside form */
+.card button[type="submit"] {
+    background: #0b0d2a;
+    color: white;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+.card button[type="reset"] {
+    background: #e5e7eb;
+    color: #333;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.card button:hover {
+    opacity: 0.9;
+}
