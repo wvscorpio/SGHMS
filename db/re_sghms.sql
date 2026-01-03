@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1:3307
--- Generation Time: Jan 03, 2026 at 09:14 AM
+-- Host: 127.0.0.1
+-- Generation Time: Jan 01, 2026 at 04:30 PM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- PHP Version: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -84,19 +84,8 @@ CREATE TABLE `user` (
   `username` varchar(30) NOT NULL,
   `password` varchar(30) NOT NULL,
   `email` varchar(50) NOT NULL,
-  `role` varchar(30) NOT NULL,
-  `fullname` varchar(100) DEFAULT NULL
+  `role` varchar(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `user`
---
-
-INSERT INTO `user` (`username`, `password`, `email`, `role`, `fullname`) VALUES
-('ilya', '$2y$10$9DQhq0xtFigWjkVoLoWAp.1', 'ilyafatimahhh73@gmail.com', 'staff', 'ilya fatimah'),
-('abu123', '$2y$10$aQWbcZBCN0c0oq/jDO7U.ew', 'abu@mail.com', 'patient', 'abu ali'),
-('gopal123', '$2y$10$v6whwfJ1Mzd2iZoK8r5HQO/', 'gopal@mail.com', 'patient', 'gopal'),
-('upin123', '$2y$10$Us2PGt0Hpq88e9ScmgbSc.5', 'upin@mail.com', 'doctor', 'upin');
 
 --
 -- Indexes for dumped tables
