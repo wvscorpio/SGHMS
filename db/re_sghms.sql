@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 10, 2026 at 12:40 PM
+-- Generation Time: Jan 10, 2026 at 01:54 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -33,8 +33,8 @@ CREATE TABLE `appointment` (
   `appointmentTime` time(6) NOT NULL,
   `reason` varchar(500) NOT NULL,
   `status` varchar(50) NOT NULL,
-  `patientID` int(100) NOT NULL,
-  `doctorID` int(100) NOT NULL
+  `patientID` varchar(10) NOT NULL,
+  `doctorID` varchar(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -42,7 +42,11 @@ CREATE TABLE `appointment` (
 --
 
 INSERT INTO `appointment` (`appointmentID`, `appointmentDate`, `appointmentTime`, `reason`, `status`, `patientID`, `doctorID`) VALUES
-('APT001', '2026-01-10', '04:00:00.000000', 'asthma', 'Pending', 0, 0);
+('', '2026-01-10', '09:00:00.000000', 'asd', 'Pending', '1', '0'),
+('APT001', '2026-01-10', '16:00:00.000000', 'mdc\r\n', 'Confirmed', '0', '0'),
+('APT002', '2026-01-10', '16:00:00.000000', 'medical checkup', 'Confirmed', 'PAT002', 'DOC001'),
+('APT003', '2026-01-10', '15:00:00.000000', 'x-ray', 'Pending', 'PAT001', 'DOC002'),
+('APT004', '2026-01-23', '08:00:00.000000', 'medical', 'Pending', 'PAT001', 'DOC001');
 
 -- --------------------------------------------------------
 
@@ -74,7 +78,7 @@ INSERT INTO `doctor` (`doctorID`, `name`, `specialization`, `contactDetails`) VA
 
 CREATE TABLE `doctor_schedule` (
   `scheduleID` int(11) NOT NULL,
-  `doctorID` int(11) NOT NULL,
+  `doctorID` varchar(10) NOT NULL,
   `dayOfWeek` enum('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
   `startTime` time NOT NULL,
   `endTime` time NOT NULL
