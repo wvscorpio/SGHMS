@@ -1,118 +1,104 @@
 <?php
 include '../db/dbcon.php';
 
-$appointments = [
-    [
-        "id" => "APT001",
-        "patient" => "Ahmad Rizal",
-        "doctor" => "Dr. Ahmad Hassan",
-        "date" => "1/5/2025",
-        "time" => "10:00",
-        "status" => "confirmed"
-    ]
-];
 // ===================== HANDLE CRUD ===================== //
-// DOCTOR CRUD
-/*if (isset($_POST['save_doctor'])) {
-    $id = $_POST['doctorID'] ?? null;
-    $name = $_POST['name'];
-    $specialization = $_POST['specialization'];
-    $contact = $_POST['contactDetails'];
+$sql = "
+SELECT a.*, p.name AS patientName, d.name AS doctorName
+FROM appointment a
+JOIN patient p ON a.patientID = p.patientID
+JOIN doctor d ON a.doctorID = d.doctorID
+";
 
-    if ($id) {
-        $stmt = $pdo->prepare("UPDATE doctor SET name=?, specialization=?, contactDetails=? WHERE doctorID=?");
-        $stmt->execute([$name, $specialization, $contact, $id]);
+$result = $conn->query($sql);
+$appointments = $result->fetch_all(MYSQLI_ASSOC);
+
+$patients = $conn->query("SELECT * FROM patient")->fetch_all(MYSQLI_ASSOC);
+$doctors  = $conn->query("SELECT * FROM doctor")->fetch_all(MYSQLI_ASSOC);
+
+
+// CREATE / UPDATE APPOINTMENT //
+function generateAppointmentID($conn) {
+    $sql = "SELECT appointmentID FROM appointment ORDER BY appointmentID DESC LIMIT 1";
+    $result = $conn->query($sql);
+
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $lastID = $row['appointmentID'];  
+        $num = intval(substr($lastID, 3)) + 1;
     } else {
-        $stmt = $pdo->prepare("INSERT INTO doctor (name, specialization, contactDetails) VALUES (?, ?, ?)");
-        $stmt->execute([$name, $specialization, $contact]);
+        $num = 1;
     }
-    header("Location: ".$_SERVER['PHP_SELF']);
-    exit;
+
+    return 'APT' . str_pad($num, 3, '0', STR_PAD_LEFT);
 }
 
-if (isset($_GET['delete_doctor'])) {
-    $stmt = $pdo->prepare("DELETE FROM doctor WHERE doctorID=?");
-    $stmt->execute([$_GET['delete_doctor']]);
-    header("Location: ".$_SERVER['PHP_SELF']);
-    exit;
+// ================= CREATE ================= //
+if (isset($_POST['create_appointment'])) {
+    $newID = generateAppointmentID($conn); 
+    $date = $_POST['date'];
+    $time = $_POST['time'];
+    $reason = $_POST['reason'];
+    $status = "Pending"; // default
+    $patientID = $_POST['patient'];
+    $doctorID = $_POST['doctor'];
+
+    $stmt = $conn->prepare("
+        INSERT INTO appointment (appointmentID, appointmentDate, appointmentTime, reason, status, patientID, doctorID)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ");
+    $stmt->bind_param("sssssss", $newID, $date, $time, $reason, $status, $patientID, $doctorID);
+    $stmt->execute();
+
+    header("Location: manageAppointment.php");
+    exit();
 }
 
-// PATIENT CRUD
-if (isset($_POST['save_patient'])) {
-    $id = $_POST['patientID'] ?? null;
-    $name = $_POST['name'];
-    $age = $_POST['age'];
-    $gender = $_POST['gender'];
-    $contact = $_POST['contactNumber'];
-    $history = $_POST['medicalHistory'];
-
-    if ($id) {
-        $stmt = $pdo->prepare("UPDATE patient SET name=?, age=?, gender=?, contactNumber=?, medicalHistory=? WHERE patientID=?");
-        $stmt->execute([$name, $age, $gender, $contact, $history, $id]);
-    } else {
-        $stmt = $pdo->prepare("INSERT INTO patient (name, age, gender, contactNumber, medicalHistory) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$name, $age, $gender, $contact, $history]);
-    }
-    header("Location: ".$_SERVER['PHP_SELF']);
-    exit;
-}
-
-if (isset($_GET['delete_patient'])) {
-    $stmt = $pdo->prepare("DELETE FROM patient WHERE patientID=?");
-    $stmt->execute([$_GET['delete_patient']]);
-    header("Location: ".$_SERVER['PHP_SELF']);
-    exit;
-}
-
-// APPOINTMENT CRUD
-if (isset($_POST['save_appointment'])) {
-    $id = $_POST['appointmentID'] ?? null;
-    $patientID = $_POST['patientID'];
-    $doctorID = $_POST['doctorID'];
-    $date = $_POST['appointmentDate'];
-    $time = $_POST['appointmentTime'];
+// ================= UPDATE ================= //
+if (isset($_POST['update_appointment'])) {
+    $id = $_POST['appointmentID'];
+    $date = $_POST['date'];
+    $time = $_POST['time'];
     $reason = $_POST['reason'];
     $status = $_POST['status'];
+    $patientID = $_POST['patient'];
+    $doctorID = $_POST['doctor'];
 
-    if ($id) {
-        $stmt = $pdo->prepare("UPDATE appointment SET patientID=?, doctorID=?, appointmentDate=?, appointmentTime=?, reason=?, status=? WHERE appointmentID=?");
-        $stmt->execute([$patientID, $doctorID, $date, $time, $reason, $status, $id]);
-    } else {
-        $stmt = $pdo->prepare("INSERT INTO appointment (patientID, doctorID, appointmentDate, appointmentTime, reason, status) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$patientID, $doctorID, $date, $time, $reason, $status]);
-    }
-    header("Location: ".$_SERVER['PHP_SELF']);
-    exit;
+    $stmt = $conn->prepare("
+        UPDATE appointment 
+        SET appointmentDate=?, appointmentTime=?, reason=?, status=?, patientID=?, doctorID=? 
+        WHERE appointmentID=?
+    ");
+    $stmt->bind_param("sssssss", $date, $time, $reason, $status, $patientID, $doctorID, $id);
+    $stmt->execute();
+
+    header("Location: manageAppointment.php");
+    exit();
 }
 
-if (isset($_GET['delete_appointment'])) {
-    $stmt = $pdo->prepare("DELETE FROM appointment WHERE appointmentID=?");
-    $stmt->execute([$_GET['delete_appointment']]);
-    header("Location: ".$_SERVER['PHP_SELF']);
-    exit;
+
+//DELETE APPOINTMENT
+if (isset($_GET['id'])) {
+    $stmt = $conn->prepare("DELETE FROM appointment WHERE appointmentID=?");
+    $stmt->bind_param("s", $_GET['id']);
+    $stmt->execute();
+
+    header("Location: manageAppointment.php");
+    exit();
 }
 
-// ===================== FETCH DATA ===================== //
-$doctors = $pdo->query("SELECT * FROM doctor")->fetchAll(PDO::FETCH_ASSOC);
-$patients = $pdo->query("SELECT * FROM patient")->fetchAll(PDO::FETCH_ASSOC);
-$appointments = $pdo->query("
-    SELECT a.*, p.name AS patientName, d.name AS doctorName 
-    FROM appointment a
-    JOIN patient p ON a.patientID = p.patientID
-    JOIN doctor d ON a.doctorID = d.doctorID
-")->fetchAll(PDO::FETCH_ASSOC);
+//UPDATE STATUS
+if (isset($_POST['appointmentID'], $_POST['status'])) {
 
+    $stmt = $conn->prepare(
+        "UPDATE appointment SET status=? WHERE appointmentID=?"
+    );
+    $stmt->bind_param("ss", $_POST['status'], $_POST['appointmentID']);
+    $stmt->execute();
 
-// FUNCTION FOR BADGE COLORS
-function getStatusColor($status) {
-    switch($status) {
-        case "pending": return "yellow";
-        case "confirmed": return "blue";
-        case "completed": return "green";
-        case "cancelled": return "red";
-        default: return "gray";
-    }
-}*/
+    echo "success";
+}
+
+$timeSlots = ['08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'];
 ?>
 
 
@@ -171,8 +157,9 @@ function getStatusColor($status) {
                         <select name = "patient" required>
                             <option value = "">Select patient</option>
                             <?php foreach ($patients as $pat): ?>
-                                <option value = "<?= $pat['patientID']; ?>">
-                                </option> 
+                                <option value="<?= $pat['patientID']; ?>">
+                                    <?= htmlspecialchars($pat['name']); ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                     </label><br><br>
@@ -232,29 +219,36 @@ function getStatusColor($status) {
                 <tbody>
                     <?php foreach ($appointments as $a): ?>
                     <tr>
-                        <td><?= $a['id'] ?></td>
-                        <td><?= $a['patient'] ?></td>
-                        <td><?= $a['doctor'] ?></td>
-                        <td><?= $a['date'] ?></td>
-                        <td><?= $a['time'] ?></td>
+                        <td><?= $a['appointmentID'] ?></td>
+                        <td><?= htmlspecialchars($a['patientName']) ?></td>
+                        <td><?= htmlspecialchars($a['doctorName']) ?></td>
+                        <td><?= $a['appointmentDate'] ?></td>
+                        <td><?= $a['appointmentTime'] ?></td>
                         <td>
                             <span class="badge confirmed">Confirmed</span>
                         </td>
+                        <td>
+                            <span class="badge <?= strtolower($a['status']) ?>">
+                                <?= htmlspecialchars($a['status']) ?>
+                            </span>
+                        </td>
                         <td class="actions">
-                            <select class="status-select">
-                                <option value="confirmed" selected>Confirmed</option>
-                                <option value="pending">Pending</option>
-                                <option value="completed">Completed</option>
-                                <option value="cancelled">Cancelled</option>
+                            <select class="status-select" data-id="<?= $a['appointmentID'] ?>">
+                                <option value="Pending" <?= $a['status']=="Pending"?"selected":"" ?>>Pending</option>
+                                <option value="Confirmed" <?= $a['status']=="Confirmed"?"selected":"" ?>>Confirmed</option>
+                                <option value="Completed" <?= $a['status']=="Completed"?"selected":"" ?>>Completed</option>
+                                <option value="Cancelled" <?= $a['status']=="Cancelled"?"selected":"" ?>>Cancelled</option>
                             </select>
-                            <button class="btn-delete" title="Delete">
+
+                            <a href="deleteAppointment.php?id=<?= $a['appointmentID'] ?>" 
+                            class="btn-delete" onclick="return confirm('Delete this appointment?')">
                                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                                     <path d="M3 6h18" stroke="white" stroke-width="2"/>
                                     <path d="M8 6v-2h8v2" stroke="white" stroke-width="2"/>
                                     <rect x="6" y="6" width="12" height="14" rx="2" stroke="white" stroke-width="2"/>
                                     <path d="M10 11v6M14 11v6" stroke="white" stroke-width="2"/>
                                 </svg>
-                            </button>
+                            </a>
 
                         </td>
                     </tr>
@@ -275,12 +269,25 @@ function getStatusColor($status) {
 
             document.querySelectorAll('.status-select').forEach(select => {
                 select.addEventListener('change', function () {
-                    const row = this.closest('tr');
-                    const badge = row.querySelector('.badge');
 
+                    const appointmentID = this.dataset.id;
                     const newStatus = this.value;
-                    badge.className = 'badge ' + newStatus;
-                    badge.textContent = newStatus;
+
+                    fetch('updateAppointmentStatus.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: `appointmentID=${appointmentID}&status=${newStatus}`
+                    })
+                    .then(res => res.text())
+                    .then(response => {
+                        if (response === 'success') {
+                            const badge = this.closest('tr').querySelector('.badge');
+                            badge.className = 'badge ' + newStatus.toLowerCase();
+                            badge.textContent = newStatus;
+                        } else {
+                            alert('Failed to update status');
+                        }
+                    });
                 });
             });
 
