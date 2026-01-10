@@ -1,0 +1,390 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", sans-serif;
+}
+
+body {
+    background-color: #f6f7fb;
+    color: #222;
+}
+
+/* ===== HEADER ===== */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background: white;
+    border-bottom: 1px solid #ddd;
+}
+
+.header h1 {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.header p {
+    color: #666;
+    margin-top: 5px;
+}
+
+.header button {
+    padding: 10px 18px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.search-bar {
+    margin: 16px 0;
+    margin-left: 50%;
+}
+
+.search-bar input {
+    width: 250px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+
+/* ===== TOP NAVIGATION ===== */
+.topnav {
+    display: flex;
+    gap: 12px;
+    background: #f2f2f4;
+    padding: 8px;
+    border-radius: 999px;
+    width: fit-content;
+    margin: 20px auto;
+}
+
+.topnav a {
+    display: flex;
+    align-items: center;
+    border: none;
+    background: transparent;
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    color: #0b0d2a;
+    width: 500px;
+    justify-content: center; 
+}
+
+.topnav a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+.topnav a.active {
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* ===== BOOKING CARD ===== */
+.card {
+    width: 650px;
+    background: white;
+    margin: 0 auto 50px auto;
+    padding: 30px;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.card h2 {
+    margin-bottom: 8px;
+}
+
+.card label {
+    font-weight: 500;
+    display: block;
+    margin-top: 15px;
+}
+
+.card input,
+.card select,
+.card textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+.card textarea {
+    resize: none;
+    height: 90px;
+}
+
+.card button[type="submit"] {
+    background: #0b0d2a;
+    color: white;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+.card button[type="reset"] {
+    background: #e5e7eb;
+    color: #333;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.card button:hover {
+    opacity: 0.9;
+}
+
+/* ===== PATIENT HEADER =====*/
+.cardheader {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  margin-top: 20px;
+  height: auto;       
+  overflow: visible;  
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.card-header h3 {
+  margin: 0;
+}
+
+.card-header p {
+  margin: 4px 0 0;
+  color: #777;
+}
+
+.btn-primary {
+  background: #0b0d24;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+
+/* ===== STAFF ADD PATIENT BUTTON ===== */
+.button_add_ptn {
+    display: flex;
+    justify-content: flex-end;
+    padding: 25px 40px;
+}
+
+.button_add_ptn button {
+    background: #0b0d2a;
+    color: white;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.button_add_ptn button:hover {
+    background: #161a3a;
+}
+
+/* ===== ADD PATIENT CARD ===== */
+.staffcard {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.form-container {
+    width: 650px;
+    margin: 0 auto 50px auto;
+    padding: 30px;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    background-color: white;
+    justify-content: center;
+    position: relative;
+    margin-top: 35px;
+}
+
+.staffcard h2 {
+    margin-bottom: 8px;
+}
+
+.staffcard label {
+    font-weight: 500;
+    margin-top: 15px;
+}
+
+.staffcard input,
+.staffcard select,
+.staffcard textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+.row {
+    display: flex;
+    gap: 12px;
+}
+
+.row label {
+    flex: 1;
+}
+
+.staffcard textarea {
+    resize: none;
+    height: 90px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: center;  
+    gap: 16px;
+    margin-top: 25px;
+}
+
+.form-actions button {
+    width: 45%;              
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    height: 50px;
+}
+
+/* Submit */
+.form-actions button[type="submit"] {
+    background: #0b0d2a;
+    color: white;
+    border: none;
+}
+
+.form-actions button[type="reset"] {
+    background: #e5e7eb;
+    color: #333;
+    border: none;
+}
+
+.form-actions button:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.close-btn {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: #555;
+}
+
+.close-btn:hover {
+    color: #000;
+}
+
+/* ===== TABLE VIEW APPOINTMENT ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background: #f2f2f2;
+    text-align: left;
+    padding: 12px;
+}
+
+td {
+    padding: 12px;
+    border-top: 1px solid #eee;
+}
+
+.badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+.badge.confirmed {
+    background: #2f7cf6;
+    color: white;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* EDIT BUTTON */
+.btn-edit {
+    background: #e5e7eb;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.btn-edit:hover {
+    background: #d1d5db;
+    transform: scale(1.05);
+}
+
+.btn-delete {
+    background: #e11d48;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.btn-delete:hover {
+    background: #be123c;
+    transform: scale(1.05);
+}
+
+
+.patient-table tbody tr {
+    transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.patient-table tbody tr:hover {
+    background-color: #f4f6ff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}

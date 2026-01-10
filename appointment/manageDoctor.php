@@ -1,14 +1,12 @@
 <?php
 include '../db/dbcon.php';
 
-$appointments = [
+$doctors = [
     [
-        "id" => "APT001",
-        "patient" => "Ahmad Rizal",
-        "doctor" => "Dr. Ahmad Hassan",
-        "date" => "1/5/2025",
-        "time" => "10:00",
-        "status" => "confirmed"
+        "doctorID" => "DOC001",
+        "name" => "Dr. Rizal",
+        "specialization" => "Cardiology",
+        "contactDetails" => "+6012-345 6789 | rizal.hassan@sarawak-hospital.my"
     ]
 ];
 // ===================== HANDLE CRUD ===================== //
@@ -121,7 +119,7 @@ function getStatusColor($status) {
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Staff Manage Appointments</title>
-        <link rel="stylesheet" href="../css/aptstyle.css"/>
+        <link rel="stylesheet" href="../css/dctStyle.css"/>
     </head>
 
     <body>
@@ -136,118 +134,99 @@ function getStatusColor($status) {
         </div>
 
         <div class="topnav">
-            <a class="active" href="manageAppointment.php">Appointments</a>
-            <a href="manageDoctor.php">Doctors</a>
+            <a href="manageAppointment.php">Appointments</a>
+            <a class="active" href="manageDoctor.php">Doctors</a>
             <a href="managePatient.php">Patients</a>
         </div>
 
-        <!-- Appointment Tab -->
+        <!-- Doctor Tab -->
         <div class="cardheader">
             <div class="card-header">
                 <div>
-                    <h3>Manage Appointments</h3>
-                    <p>View and manage all hospital appointments</p>
+                    <h3>Manage Doctors</h3>
+                    <p>Add, edit, or remove doctor information</p>
                 </div>
                 <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="Search appointment">
+                    <input type="text" id="searchInput" placeholder="Search doctor">
                 </div>
-                <div class = "button_new_apt">
-                    <button onclick = "formNewApt()">New Appointment</button>
+                <div class = "button_new_dct">
+                    <button onclick = "formAddDct()">Add Doctor</button>
                 </div>
             </div>    
                 
-            <!-- Appointment Card Popup -->
+            <!-- Doctor Card Popup -->
             <div class="staffcard" id="staffBookCard" style="display:none;">
-                <form method = "post" class="form-container">
+                <form method="post" class="form-container">
 
-                    <div class = "button_closenew_apt">
-                        <button onclick = "formCloseNewApt()" class="close-btn" type="button">&times;</button>
-                    </div>
+                    <input type="hidden" name="doctorID" id="doctorID">
 
-                    <h2>Create Appointment</h2>
-                    <label>Schedule a new appointment</label><br><br>
+                    <button type="button" class="close-btn" onclick="formCloseAddDct()">&times;</button>
 
-                    <label>Patient<br>
-                        <select name = "patient" required>
-                            <option value = "">Select patient</option>
-                            <?php foreach ($patients as $pat): ?>
-                                <option value = "<?= $pat['patientID']; ?>">
-                                </option> 
+                    <h2 id="doctorFormTitle">Add New Doctor</h2>
+                    <label id="doctorFormSubtitle">Enter doctor information</label><br><br>
+
+                    <label>Full Name<br>
+                        <input type="text" name="name" id="doctorName" required>
+                    </label><br><br>
+
+                    <label>Specialization<br>
+                        <select name="specialization" id="doctorSpecialization" required>
+                            <option value="">Select specialization</option>
+                            <?php foreach ($doctors as $doc): ?>
+                                <option value="<?= $doc['specialization']; ?>">
+                                    <?= $doc['specialization']; ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                     </label><br><br>
 
-                    <label>Doctor<br>
-                        <select name = "doctor" required>
-                            <option value = "">Select doctor</option>
-                            <?php foreach ($doctors as $doc): ?>
-                                <option value = "<?= $doc['doctorID']; ?>">
-                                    <?= htmlspecialchars($doc['name'] . " - " . $doc['specialization']); ?>
-                                </option> 
-                            <?php endforeach; ?>
-                        </select>
-                    </label> <br>
-
-                    <div class = "row">
-                        <label>Date<br>
-                            <input type="date" name="date" min="<?= date('Y-m-d'); ?>" required>
-                        </label>
-
-                        <label>Time
-                            <select name="time" required>
-                                <option value="">Choose a time slot</option>
-                                <?php foreach ($timeSlots as $time): ?>
-                                    <option value="<?= $time; ?>"><?= $time; ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </label>
-                    </div>
-
-                    <br>
-                    <label>Reason<br>
-                        <textarea name="reason" placeholder="Reason for appointment" required></textarea>
+                    <label>Contact Details<br>
+                        <textarea name="contactDetails" id="doctorContact" required></textarea>
                     </label><br><br>
 
                     <div class="form-actions">
-                        <button type="submit" name="create_appointment">Create Appointment</button>
-                        <button type="reset" name="cancel_appointment">Cancel</button>
+                        <button type="submit" name="save_doctor">Save</button>
+                        <button type="button" id="doctorCancelBtn">Cancel</button>
                     </div>
                 </form>
             </div>
-            
-            <!-- Appointment Table View -->
-            <table class="appointment-table">
+
+
+             <!-- Doctor Table View -->
+            <table class="doctor-table">
                 <thead>
                 <tr>
-                    <th>Appointment ID</th>
-                    <th>Patient</th>
-                    <th>Doctor</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Status</th>
+                    <th>Doctor ID</th>
+                    <th>Name</th>
+                    <th>Specialization</th>
+                    <th>Contact Details</th>
                     <th>Actions</th>
                 </tr>
                 </thead>
 
                 <tbody>
-                    <?php foreach ($appointments as $a): ?>
+                    <?php foreach ($doctors as $d): ?>
                     <tr>
-                        <td><?= $a['id'] ?></td>
-                        <td><?= $a['patient'] ?></td>
-                        <td><?= $a['doctor'] ?></td>
-                        <td><?= $a['date'] ?></td>
-                        <td><?= $a['time'] ?></td>
-                        <td>
-                            <span class="badge confirmed">Confirmed</span>
-                        </td>
+                        <td><?= $d['doctorID'] ?></td>
+                        <td><?= $d['name'] ?></td>
+                        <td><?= $d['specialization'] ?></td>
+                        <td><?= $d['contactDetails'] ?></td>
+
                         <td class="actions">
-                            <select class="status-select">
-                                <option value="confirmed" selected>Confirmed</option>
-                                <option value="pending">Pending</option>
-                                <option value="completed">Completed</option>
-                                <option value="cancelled">Cancelled</option>
-                            </select>
-                            <button class="btn-delete" title="Delete">
+                            <button class="btn-edit"
+                                onclick="openEditDoctor(
+                                    '<?= $d['doctorID'] ?>',
+                                    '<?= htmlspecialchars($d['name']) ?>',
+                                    '<?= htmlspecialchars($d['specialization']) ?>',
+                                    '<?= htmlspecialchars($d['contactDetails']) ?>'
+                                )">
+                                ✏️
+                            </button>
+
+                            <button 
+                                class="btn-delete" 
+                                onclick="return confirm('Delete this doctor?')"
+                                title="Delete Doctor">
                                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                                     <path d="M3 6h18" stroke="white" stroke-width="2"/>
                                     <path d="M8 6v-2h8v2" stroke="white" stroke-width="2"/>
@@ -255,7 +234,6 @@ function getStatusColor($status) {
                                     <path d="M10 11v6M14 11v6" stroke="white" stroke-width="2"/>
                                 </svg>
                             </button>
-
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -264,34 +242,53 @@ function getStatusColor($status) {
         </div>
     </body>
 
-      <script>
-            function formNewApt() {
-                document.getElementById("staffBookCard").style.display = "block";
-            }   
+            <script>
+            function formAddDct() {
+                document.getElementById("staffBookCard").style.display = "flex";
 
-            function formCloseNewApt(){
+                document.getElementById("doctorFormTitle").innerText = "Add New Doctor";
+                document.getElementById("doctorFormSubtitle").innerText = "Enter doctor information";
+
+                document.getElementById("doctorID").value = "";
+                document.getElementById("doctorName").value = "";
+                document.getElementById("doctorSpecialization").value = "";
+                document.getElementById("doctorContact").value = "";
+
+                let cancelBtn = document.getElementById("doctorCancelBtn");
+                cancelBtn.onclick = function() {
+                    document.querySelector('.form-container').reset();
+                }
+            }
+
+            function openEditDoctor(id, name, specialization, contact) {
+                document.getElementById("staffBookCard").style.display = "flex";
+
+                document.getElementById("doctorFormTitle").innerText = "Edit Doctor";
+                document.getElementById("doctorFormSubtitle").innerText = "Update doctor information";
+
+                document.getElementById("doctorID").value = id;
+                document.getElementById("doctorName").value = name;
+                document.getElementById("doctorSpecialization").value = specialization;
+                document.getElementById("doctorContact").value = contact;
+
+                let cancelBtn = document.getElementById("doctorCancelBtn");
+                cancelBtn.onclick = formCloseAddDct;
+            }
+
+
+            function formCloseAddDct() {
                 document.getElementById("staffBookCard").style.display = "none";
             }
 
-            document.querySelectorAll('.status-select').forEach(select => {
-                select.addEventListener('change', function () {
-                    const row = this.closest('tr');
-                    const badge = row.querySelector('.badge');
-
-                    const newStatus = this.value;
-                    badge.className = 'badge ' + newStatus;
-                    badge.textContent = newStatus;
-                });
-            });
-
             document.getElementById('searchInput').addEventListener('keyup', function () {
                 const keyword = this.value.toLowerCase();
-                const rows = document.querySelectorAll('.appointment-table tbody tr');
+                const rows = document.querySelectorAll('.doctor-table tbody tr');
 
                 rows.forEach(row => {
                     const text = row.innerText.toLowerCase();
                     row.style.display = text.includes(keyword) ? '' : 'none';
                 });
             });
-        </script>
+            </script>
+
 </html>

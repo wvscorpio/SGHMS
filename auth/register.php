@@ -1,5 +1,5 @@
 <?php
-require_once "../../db/dbcon.php";
+require_once "../db/dbcon.php";
 
 $message = "";
 $msg_class = "";
@@ -64,7 +64,7 @@ if (isset($_POST['register'])) {
 <head>
     <meta charset="UTF-8">
     <title>SGHMS | Register</title>
-    <link rel="stylesheet" href="../../css/register.css">
+    <link rel="stylesheet" href="../css/register.css">
 </head>
 <body>
 
