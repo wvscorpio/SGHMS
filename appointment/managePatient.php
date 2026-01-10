@@ -77,9 +77,9 @@ $patients = $conn->query("SELECT * FROM patient")->fetch_all(MYSQLI_ASSOC);
         <div class = "header">
             <div>
                 <h1>Sarawak General Hospital</h1>
-                <p>Welcome, </p>
+                <p>Welcome, <?= htmlspecialchars($_SESSION['fullname'] ?? 'Staff'); ?></p>
             </div>
-            <form method = "post" action = "logout.php">
+            <form method = "post" action = "../auth/logout.php">
                 <button type = "Submit">Logout</button>
             </form>
         </div>
