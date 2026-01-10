@@ -1,6 +1,16 @@
 <?php
 include '../db/dbcon.php';
 
+$appointments = [
+    [
+        "id" => "APT001",
+        "patient" => "Ahmad Rizal",
+        "doctor" => "Dr. Ahmad Hassan",
+        "date" => "1/5/2025",
+        "time" => "10:00",
+        "status" => "confirmed"
+    ]
+];
 // ===================== HANDLE CRUD ===================== //
 // DOCTOR CRUD
 /*if (isset($_POST['save_doctor'])) {
@@ -111,154 +121,177 @@ function getStatusColor($status) {
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Staff Manage Appointments</title>
-        <link rel="stylesheet" href="../css/style.css" />
-
-        <style>
-            body { font-family: Arial; background:#f5f5f5; }
-            .container { max-width:1200px; margin:20px auto; padding:20px; background:#fff; border-radius:8px; }
-            table { width:100%; border-collapse:collapse; margin-bottom:30px; }
-            th, td { border:1px solid #ddd; padding:8px; }
-            th { background:#eee; }
-            .badge { padding:3px 8px; border-radius:4px; color:#fff; }
-            .badge.yellow { background:#f0ad4e; }
-            .badge.blue { background:#0275d8; }
-            .badge.green { background:#5cb85c; }
-            .badge.red { background:#d9534f; }
-            form { margin-bottom:20px; }
-            input, select, textarea, button { padding:5px; margin-top:5px; width:100%; box-sizing:border-box; }
-            button { cursor:pointer; }
-        </style>
+        <link rel="stylesheet" href="../css/aptstyle.css"/>
     </head>
 
     <body>
-       <div class="container">
-            <h1>Staff Dashboard</h1>
-
-            <!-- DOCTOR FORM -->
-            <h2>Doctors</h2>
-            <form method="POST">
-            <input type="hidden" name="doctorID" value="<?= $_GET['edit_doctor'] ?? '' ?>">
-            <label>Name</label>
-            <input type="text" name="name" value="<?= $_GET['edit_doctor'] ? $pdo->query("SELECT * FROM doctor WHERE doctorID=".$_GET['edit_doctor'])->fetch()['name'] : '' ?>" required>
-            <label>Specialization</label>
-            <select name="specialization">
-            <option value="General Practitioner">General Practitioner</option>
-            <option value="Cardiology">Cardiology</option>
-            <option value="Neurology">Neurology</option>
-            <option value="Orthopedics">Orthopedics</option>
-            <option value="Pediatrics">Pediatrics</option>
-            <option value="Dermatology">Dermatology</option>
-            </select>
-            <label>Contact Details</label>
-            <input type="text" name="contactDetails" value="<?= $_GET['edit_doctor'] ? $pdo->query("SELECT * FROM doctor WHERE doctorID=".$_GET['edit_doctor'])->fetch()['contactDetails'] : '' ?>" required>
-            <button type="submit" name="save_doctor">Save Doctor</button>
+        <div class = "header">
+            <div>
+                <h1>Sarawak General Hospital</h1>
+                <p>Welcome, </p>
+            </div>
+            <form method = "post" action = "logout.php">
+                <button type = "Submit">Logout</button>
             </form>
+        </div>
 
-        <table>
-        <tr><th>ID</th><th>Name</th><th>Specialization</th><th>Contact</th><th>Action</th></tr>
-        <?php foreach($doctors as $doc): ?>
-        <tr>
-        <td><?= $doc['doctorID'] ?></td>
-        <td><?= $doc['name'] ?></td>
-        <td><?= $doc['specialization'] ?></td>
-        <td><?= $doc['contactDetails'] ?></td>
-        <td>
-        <a href="?edit_doctor=<?= $doc['doctorID'] ?>">Edit</a> |
-        <a href="?delete_doctor=<?= $doc['doctorID'] ?>" onclick="return confirm('Delete this doctor?')">Delete</a>
-        </td>
-        </tr>
-        <?php endforeach; ?>
-        </table>
+        <div class="topnav">
+            <a class="active" href="manageAppointment.php">Appointments</a>
+            <a href="manageDoctor.php">Doctors</a>
+            <a href="managePatient.php">Patients</a>
+        </div>
 
-        <!-- PATIENT FORM -->
-        <h2>Patients</h2>
-        <form method="POST">
-        <input type="hidden" name="patientID" value="<?= $_GET['edit_patient'] ?? '' ?>">
-        <label>Name</label>
-        <input type="text" name="name" value="<?= $_GET['edit_patient'] ? $pdo->query("SELECT * FROM patient WHERE patientID=".$_GET['edit_patient'])->fetch()['name'] : '' ?>" required>
-        <label>Age</label>
-        <input type="number" name="age" value="<?= $_GET['edit_patient'] ? $pdo->query("SELECT * FROM patient WHERE patientID=".$_GET['edit_patient'])->fetch()['age'] : '' ?>" required>
-        <label>Gender</label>
-        <select name="gender">
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Other">Other</option>
-        </select>
-        <label>Contact Number</label>
-        <input type="text" name="contactNumber" value="<?= $_GET['edit_patient'] ? $pdo->query("SELECT * FROM patient WHERE patientID=".$_GET['edit_patient'])->fetch()['contactNumber'] : '' ?>" required>
-        <label>Medical History</label>
-        <textarea name="medicalHistory"><?= $_GET['edit_patient'] ? $pdo->query("SELECT * FROM patient WHERE patientID=".$_GET['edit_patient'])->fetch()['medicalHistory'] : '' ?></textarea>
-        <button type="submit" name="save_patient">Save Patient</button>
-        </form>
+        <!-- Appointment Tab -->
+        <div class="cardheader">
+            <div class="card-header">
+                <div>
+                    <h3>Manage Appointments</h3>
+                    <p>View and manage all hospital appointments</p>
+                </div>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search appointment">
+                </div>
+                <div class = "button_new_apt">
+                    <button onclick = "formNewApt()">New Appointment</button>
+                </div>
+            </div>    
+                
+            <!-- Appointment Card Popup -->
+            <div class="staffcard" id="staffBookCard" style="display:none;">
+                <form method = "post" class="form-container">
 
-        <table>
-        <tr><th>ID</th><th>Name</th><th>Age</th><th>Gender</th><th>Contact</th><th>History</th><th>Action</th></tr>
-        <?php foreach($patients as $pat): ?>
-        <tr>
-        <td><?= $pat['patientID'] ?></td>
-        <td><?= $pat['name'] ?></td>
-        <td><?= $pat['age'] ?></td>
-        <td><?= $pat['gender'] ?></td>
-        <td><?= $pat['contactNumber'] ?></td>
-        <td><?= $pat['medicalHistory'] ?></td>
-        <td>
-        <a href="?edit_patient=<?= $pat['patientID'] ?>">Edit</a> |
-        <a href="?delete_patient=<?= $pat['patientID'] ?>" onclick="return confirm('Delete this patient?')">Delete</a>
-        </td>
-        </tr>
-        <?php endforeach; ?>
-        </table>
+                    <div class = "button_closenew_apt">
+                        <button onclick = "formCloseNewApt()" class="close-btn" type="button">&times;</button>
+                    </div>
 
-        <!-- APPOINTMENT FORM -->
-        <h2>Appointments</h2>
-        <form method="POST">
-        <input type="hidden" name="appointmentID" value="<?= $_GET['edit_appointment'] ?? '' ?>">
-        <label>Patient</label>
-        <select name="patientID">
-        <?php foreach($patients as $pat): ?>
-        <option value="<?= $pat['patientID'] ?>"><?= $pat['name'] ?></option>
-        <?php endforeach; ?>
-        </select>
-        <label>Doctor</label>
-        <select name="doctorID">
-        <?php foreach($doctors as $doc): ?>
-        <option value="<?= $doc['doctorID'] ?>"><?= $doc['name'] ?></option>
-        <?php endforeach; ?>
-        </select>
-        <label>Date</label>
-        <input type="date" name="appointmentDate" required>
-        <label>Time</label>
-        <input type="time" name="appointmentTime" required>
-        <label>Reason</label>
-        <textarea name="reason"></textarea>
-        <label>Status</label>
-        <select name="status">
-        <option value="pending">Pending</option>
-        <option value="confirmed">Confirmed</option>
-        <option value="completed">Completed</option>
-        <option value="cancelled">Cancelled</option>
-        </select>
-        <button type="submit" name="save_appointment">Save Appointment</button>
-        </form>
+                    <h2>Create Appointment</h2>
+                    <label>Schedule a new appointment</label><br><br>
 
-        <table>
-        <tr><th>ID</th><th>Patient</th><th>Doctor</th><th>Date</th><th>Time</th><th>Status</th><th>Action</th></tr>
-        <?php foreach($appointments as $apt): ?>
-        <tr>
-        <td><?= $apt['appointmentID'] ?></td>
-        <td><?= $apt['patientName'] ?></td>
-        <td><?= $apt['doctorName'] ?></td>
-        <td><?= $apt['appointmentDate'] ?></td>
-        <td><?= $apt['appointmentTime'] ?></td>
-        <td><span class="badge <?= getStatusColor($apt['status']) ?>"><?= ucfirst($apt['status']) ?></span></td>
-        <td>
-        <a href="?edit_appointment=<?= $apt['appointmentID'] ?>">Edit</a> |
-        <a href="?delete_appointment=<?= $apt['appointmentID'] ?>" onclick="return confirm('Delete this appointment?')">Delete</a>
-        </td>
-        </tr>
-        <?php endforeach; ?>
-        </table>
+                    <label>Patient<br>
+                        <select name = "patient" required>
+                            <option value = "">Select patient</option>
+                            <?php foreach ($patients as $pat): ?>
+                                <option value = "<?= $pat['patientID']; ?>">
+                                </option> 
+                            <?php endforeach; ?>
+                        </select>
+                    </label><br><br>
+
+                    <label>Doctor<br>
+                        <select name = "doctor" required>
+                            <option value = "">Select doctor</option>
+                            <?php foreach ($doctors as $doc): ?>
+                                <option value = "<?= $doc['doctorID']; ?>">
+                                    <?= htmlspecialchars($doc['name'] . " - " . $doc['specialization']); ?>
+                                </option> 
+                            <?php endforeach; ?>
+                        </select>
+                    </label> <br>
+
+                    <div class = "row">
+                        <label>Date<br>
+                            <input type="date" name="date" min="<?= date('Y-m-d'); ?>" required>
+                        </label>
+
+                        <label>Time
+                            <select name="time" required>
+                                <option value="">Choose a time slot</option>
+                                <?php foreach ($timeSlots as $time): ?>
+                                    <option value="<?= $time; ?>"><?= $time; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </label>
+                    </div>
+
+                    <br>
+                    <label>Reason<br>
+                        <textarea name="reason" placeholder="Reason for appointment" required></textarea>
+                    </label><br><br>
+
+                    <div class="form-actions">
+                        <button type="submit" name="create_appointment">Create Appointment</button>
+                        <button type="reset" name="cancel_appointment">Cancel</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Appointment Table View -->
+            <table class="appointment-table">
+                <thead>
+                <tr>
+                    <th>Appointment ID</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                    <?php foreach ($appointments as $a): ?>
+                    <tr>
+                        <td><?= $a['id'] ?></td>
+                        <td><?= $a['patient'] ?></td>
+                        <td><?= $a['doctor'] ?></td>
+                        <td><?= $a['date'] ?></td>
+                        <td><?= $a['time'] ?></td>
+                        <td>
+                            <span class="badge confirmed">Confirmed</span>
+                        </td>
+                        <td class="actions">
+                            <select class="status-select">
+                                <option value="confirmed" selected>Confirmed</option>
+                                <option value="pending">Pending</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <button class="btn-delete" title="Delete">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                                    <path d="M3 6h18" stroke="white" stroke-width="2"/>
+                                    <path d="M8 6v-2h8v2" stroke="white" stroke-width="2"/>
+                                    <rect x="6" y="6" width="12" height="14" rx="2" stroke="white" stroke-width="2"/>
+                                    <path d="M10 11v6M14 11v6" stroke="white" stroke-width="2"/>
+                                </svg>
+                            </button>
+
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         </div>
     </body>
-    
+
+      <script>
+            function formNewApt() {
+                document.getElementById("staffBookCard").style.display = "block";
+            }   
+
+            function formCloseNewApt(){
+                document.getElementById("staffBookCard").style.display = "none";
+            }
+
+            document.querySelectorAll('.status-select').forEach(select => {
+                select.addEventListener('change', function () {
+                    const row = this.closest('tr');
+                    const badge = row.querySelector('.badge');
+
+                    const newStatus = this.value;
+                    badge.className = 'badge ' + newStatus;
+                    badge.textContent = newStatus;
+                });
+            });
+
+            document.getElementById('searchInput').addEventListener('keyup', function () {
+                const keyword = this.value.toLowerCase();
+                const rows = document.querySelectorAll('.appointment-table tbody tr');
+
+                rows.forEach(row => {
+                    const text = row.innerText.toLowerCase();
+                    row.style.display = text.includes(keyword) ? '' : 'none';
+                });
+            });
+        </script>
 </html>
