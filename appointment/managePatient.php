@@ -1,43 +1,22 @@
 <?php
 include '../db/dbcon.php';
 
-$patients = [
-    [
-        "id" => "PAT001",
-        "name" => "Mikael",
-        "age" => "25",
-        "gender" => "Male",
-        "contact" => "+6016-355 6695",
-        "medical_history" => "Hypertension, regular checkups required"
-    ]
-];
-// ===================== HANDLE CRUD ===================== //
-// DOCTOR CRUD
-/*if (isset($_POST['save_doctor'])) {
-    $id = $_POST['doctorID'] ?? null;
-    $name = $_POST['name'];
-    $specialization = $_POST['specialization'];
-    $contact = $_POST['contactDetails'];
+/* ===================== SAVE / UPDATE PATIENT ===================== */
+function generatePatientID($conn) {
+    $sql = "SELECT patientID FROM patient ORDER BY patientID DESC LIMIT 1";
+    $result = $conn->query($sql);
 
-    if ($id) {
-        $stmt = $pdo->prepare("UPDATE doctor SET name=?, specialization=?, contactDetails=? WHERE doctorID=?");
-        $stmt->execute([$name, $specialization, $contact, $id]);
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $lastID = $row['patientID'];   
+        $num = intval(substr($lastID, 3)) + 1;
     } else {
-        $stmt = $pdo->prepare("INSERT INTO doctor (name, specialization, contactDetails) VALUES (?, ?, ?)");
-        $stmt->execute([$name, $specialization, $contact]);
+        $num = 1;
     }
-    header("Location: ".$_SERVER['PHP_SELF']);
-    exit;
+
+    return 'PAT' . str_pad($num, 3, '0', STR_PAD_LEFT);
 }
 
-if (isset($_GET['delete_doctor'])) {
-    $stmt = $pdo->prepare("DELETE FROM doctor WHERE doctorID=?");
-    $stmt->execute([$_GET['delete_doctor']]);
-    header("Location: ".$_SERVER['PHP_SELF']);
-    exit;
-}
-
-// PATIENT CRUD
 if (isset($_POST['save_patient'])) {
     $id = $_POST['patientID'] ?? null;
     $name = $_POST['name'];
@@ -47,72 +26,42 @@ if (isset($_POST['save_patient'])) {
     $history = $_POST['medicalHistory'];
 
     if ($id) {
-        $stmt = $pdo->prepare("UPDATE patient SET name=?, age=?, gender=?, contactNumber=?, medicalHistory=? WHERE patientID=?");
-        $stmt->execute([$name, $age, $gender, $contact, $history, $id]);
+        // UPDATE
+        $stmt = $conn->prepare("
+            UPDATE patient 
+            SET name=?, age=?, gender=?, contactNumber=?, medicalHistory=? 
+            WHERE patientID=?
+        ");
+        $stmt->bind_param("sissss", $name, $age, $gender, $contact, $history, $id);
+        $stmt->execute();
     } else {
-        $stmt = $pdo->prepare("INSERT INTO patient (name, age, gender, contactNumber, medicalHistory) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$name, $age, $gender, $contact, $history]);
+        // INSERT
+        $newID = generatePatientID($conn);
+
+        $stmt = $conn->prepare("
+            INSERT INTO patient (patientID, name, age, gender, contactNumber, medicalHistory)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ");
+        $stmt->bind_param("ssisss", $newID, $name, $age, $gender, $contact, $history);
+        $stmt->execute();
     }
-    header("Location: ".$_SERVER['PHP_SELF']);
+
+    header("Location: managePatient.php");
     exit;
 }
 
+/* ===================== DELETE PATIENT ===================== */
 if (isset($_GET['delete_patient'])) {
-    $stmt = $pdo->prepare("DELETE FROM patient WHERE patientID=?");
-    $stmt->execute([$_GET['delete_patient']]);
-    header("Location: ".$_SERVER['PHP_SELF']);
+    $stmt = $conn->prepare("DELETE FROM patient WHERE patientID=?");
+    $stmt->bind_param("s", $_GET['delete_patient']);
+    $stmt->execute();
+
+    header("Location: managePatient.php");
     exit;
 }
 
-// APPOINTMENT CRUD
-if (isset($_POST['save_appointment'])) {
-    $id = $_POST['appointmentID'] ?? null;
-    $patientID = $_POST['patientID'];
-    $doctorID = $_POST['doctorID'];
-    $date = $_POST['appointmentDate'];
-    $time = $_POST['appointmentTime'];
-    $reason = $_POST['reason'];
-    $status = $_POST['status'];
-
-    if ($id) {
-        $stmt = $pdo->prepare("UPDATE appointment SET patientID=?, doctorID=?, appointmentDate=?, appointmentTime=?, reason=?, status=? WHERE appointmentID=?");
-        $stmt->execute([$patientID, $doctorID, $date, $time, $reason, $status, $id]);
-    } else {
-        $stmt = $pdo->prepare("INSERT INTO appointment (patientID, doctorID, appointmentDate, appointmentTime, reason, status) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$patientID, $doctorID, $date, $time, $reason, $status]);
-    }
-    header("Location: ".$_SERVER['PHP_SELF']);
-    exit;
-}
-
-if (isset($_GET['delete_appointment'])) {
-    $stmt = $pdo->prepare("DELETE FROM appointment WHERE appointmentID=?");
-    $stmt->execute([$_GET['delete_appointment']]);
-    header("Location: ".$_SERVER['PHP_SELF']);
-    exit;
-}
-
-// ===================== FETCH DATA ===================== //
-$doctors = $pdo->query("SELECT * FROM doctor")->fetchAll(PDO::FETCH_ASSOC);
-$patients = $pdo->query("SELECT * FROM patient")->fetchAll(PDO::FETCH_ASSOC);
-$appointments = $pdo->query("
-    SELECT a.*, p.name AS patientName, d.name AS doctorName 
-    FROM appointment a
-    JOIN patient p ON a.patientID = p.patientID
-    JOIN doctor d ON a.doctorID = d.doctorID
-")->fetchAll(PDO::FETCH_ASSOC);
-
-
-// FUNCTION FOR BADGE COLORS
-function getStatusColor($status) {
-    switch($status) {
-        case "pending": return "yellow";
-        case "confirmed": return "blue";
-        case "completed": return "green";
-        case "cancelled": return "red";
-        default: return "gray";
-    }
-}*/
+/* ===================== FETCH PATIENT DATA ===================== */
+$patients = $conn->query("SELECT * FROM patient")->fetch_all(MYSQLI_ASSOC);
 ?>
 
 
@@ -217,37 +166,36 @@ function getStatusColor($status) {
                 <tbody>
                     <?php foreach ($patients as $p): ?>
                     <tr>
-                        <td><?= $p['id'] ?></td>
+                        <td><?= $p['patientID'] ?></td>
                         <td><?= $p['name'] ?></td>
                         <td><?= $p['age'] ?></td>
                         <td><?= $p['gender'] ?></td>
-                        <td><?= $p['contact'] ?></td>
-                        <td><?= $p['medical_history'] ?></td>
+                        <td><?= $p['contactNumber'] ?></td>
+                        <td><?= $p['medicalHistory'] ?></td>
 
                         <td class="actions">
                             <button class="btn-edit"
                                 onclick="openEditPtn(
-                                    '<?= $p['id'] ?>',
+                                    '<?= $p['patientID'] ?>',
                                     '<?= htmlspecialchars($p['name']) ?>',
-                                    '<?= htmlspecialchars($p['age']) ?>',
-                                    '<?= htmlspecialchars($p['gender']) ?>',
-                                    '<?= htmlspecialchars($p['contact']) ?>',
-                                    '<?= htmlspecialchars($p['medical_history']) ?>'
+                                    '<?= $p['age'] ?>',
+                                    '<?= $p['gender'] ?>',
+                                    '<?= htmlspecialchars($p['contactNumber']) ?>',
+                                    '<?= htmlspecialchars($p['medicalHistory']) ?>'
                                 )">
                                 ✏️
                             </button>
 
-                            <button 
-                                class="btn-delete" 
-                                onclick="return confirm('Delete this patient?')"
-                                title="Delete Patient">
+
+                            <a href="managePatient.php?delete_patient=<?= $p['patientID'] ?>" 
+                            class="btn-delete" onclick="return confirm('Delete this patient?')" title="Delete Patient">
                                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                                     <path d="M3 6h18" stroke="white" stroke-width="2"/>
                                     <path d="M8 6v-2h8v2" stroke="white" stroke-width="2"/>
                                     <rect x="6" y="6" width="12" height="14" rx="2" stroke="white" stroke-width="2"/>
                                     <path d="M10 11v6M14 11v6" stroke="white" stroke-width="2"/>
                                 </svg>
-                            </button>
+                            </a>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -306,5 +254,11 @@ function getStatusColor($status) {
                     row.style.display = text.includes(keyword) ? '' : 'none';
                 });
             });
+
+            /*document.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    if(!confirm('Delete this patient?')) e.preventDefault();
+                });
+            });*/
         </script>
 </html>
