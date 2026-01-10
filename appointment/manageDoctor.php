@@ -46,54 +46,6 @@ if (isset($_POST['save_doctor'])) {
     exit();
 }
 
-function generateAppointmentID($conn) {
-    $sql = "SELECT appointmentID FROM appointment ORDER BY appointmentID DESC LIMIT 1";
-    $result = $conn->query($sql);
-
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        $lastID = $row['appointmentID'];  
-        $num = intval(substr($lastID, 3)) + 1;
-    } else {
-        $num = 1;
-    }
-
-    return 'APT' . str_pad($num, 3, '0', STR_PAD_LEFT);
-}
-
-if (isset($_POST['create_appointment'])) {
-    $id = $_POST['appointmentID'] ?? null;
-    $date = $_POST['appointmentDate'];
-    $time = $_POST['appointmentTime'];
-    $reason = $_POST['reason'];
-    $status = $_POST['status'];
-    $patientID = $_POST['patientID'];
-    $doctorID = $_POST['doctorID'];
-
-    if ($id) {
-        // UPDATE
-        $stmt = $conn->prepare("
-            UPDATE doctor 
-            SET name=?, specialization=?, contactDetails=?
-            WHERE doctorID=?
-        ");
-        $stmt->bind_param("ssss", $name, $specialization, $contact, $id);
-        $stmt->execute();
-    } else {
-        // INSERT
-        $newID = generateDoctorID($conn);
-        $stmt = $conn->prepare("
-            INSERT INTO doctor (doctorID, name, specialization, contactDetails) VALUES (?, ?, ?, ?)
-        ");
-        $stmt->bind_param("ssss", $newID, $name, $specialization, $contact);
-        $stmt->execute();
-    }
-
-    header("Location: manageDoctor.php");
-    exit();
-}
-
-
 // ===================== DELETE DOCTOR ===================== //
 if (isset($_GET['delete'])) {
 
@@ -124,9 +76,9 @@ $doctors = $result->fetch_all(MYSQLI_ASSOC);
         <div class = "header">
             <div>
                 <h1>Sarawak General Hospital</h1>
-                <p>Welcome, </p>
+                <p>Welcome, <?= htmlspecialchars($_SESSION['fullname'] ?? 'Staff'); ?></p>
             </div>
-            <form method = "post" action = "logout.php">
+            <form method = "post" action = "../auth/logout.php">
                 <button type = "Submit">Logout</button>
             </form>
         </div>
