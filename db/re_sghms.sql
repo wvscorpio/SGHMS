@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Jan 10, 2026 at 01:54 PM
+-- Host: 127.0.0.1:3307
+-- Generation Time: Jan 10, 2026 at 10:18 PM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.0.30
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -111,27 +111,26 @@ INSERT INTO `patient` (`patientID`, `name`, `age`, `gender`, `contactNumber`, `m
 -- --------------------------------------------------------
 
 --
--- Table structure for table `staff`
---
-
-CREATE TABLE `staff` (
-  `staffID` int(100) NOT NULL,
-  `department` varchar(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `user`
 --
 
 CREATE TABLE `user` (
   `username` varchar(30) NOT NULL,
-  `password` varchar(30) NOT NULL,
+  `password` varchar(255) NOT NULL,
   `email` varchar(50) NOT NULL,
   `role` varchar(30) NOT NULL,
   `fullname` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `user`
+--
+
+INSERT INTO `user` (`username`, `password`, `email`, `role`, `fullname`) VALUES
+('testuser', '$2y$10$U9XkR9o/Mpk/Gmq.y3fS/.u7/l7m2.jI/8k8h3O.6u4k2g2v6f2uG', 'test@mail.com', 'patient', 'Test Account'),
+('aina123', '$2y$10$/5Z9i28EyM9bbJKQTuPO8OiEHvXE7twR01B/rFwqApiIcqXCLmYPS', 'aina@mail.com', 'patient', 'aina'),
+('farah123', '$2y$10$VGoE9JToQGaLtQcMW3R9Ee69XRrKfjbXYCiJRbvmRztKRBZyUFb4C', 'farah@mail.com', 'doctor', 'farah'),
+('wati123', '$2y$10$ymg2mLR8jV9u/z63v4cLkOGqhidGl.o5FR9x7M3WTv1YiYAK9ElgO', 'wati@mail.com', 'staff', 'wati');
 
 --
 -- Indexes for dumped tables
@@ -163,12 +162,6 @@ ALTER TABLE `patient`
   ADD PRIMARY KEY (`patientID`);
 
 --
--- Indexes for table `staff`
---
-ALTER TABLE `staff`
-  ADD PRIMARY KEY (`staffID`);
-
---
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -177,12 +170,6 @@ ALTER TABLE `staff`
 --
 ALTER TABLE `doctor_schedule`
   MODIFY `scheduleID` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `staff`
---
-ALTER TABLE `staff`
-  MODIFY `staffID` int(100) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
