@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once "../db/dbcon.php";
 
 $message = "";
@@ -6,10 +7,11 @@ $msg_class = "";
 
 if (isset($_POST['register'])) {
 
-    $username = trim($_POST['username'] ?? '');
+    // ✅ NORMALIZE INPUT
+    $username = strtolower(trim($_POST['username'] ?? ''));
     $password_raw = $_POST['password'] ?? '';
     $email = trim($_POST['email'] ?? '');
-    $role = trim($_POST['role'] ?? '');
+    $role = strtolower(trim($_POST['role'] ?? ''));
     $fullname = trim($_POST['fullname'] ?? '');
 
     if ($username === '' || $password_raw === '' || $email === '' || $role === '' || $fullname === '') {
@@ -17,8 +19,10 @@ if (isset($_POST['register'])) {
         $msg_class = "error";
     } else {
 
+        // ✅ HASH PASSWORD ONCE (CORRECT)
         $password = password_hash($password_raw, PASSWORD_DEFAULT);
 
+        // ✅ CHECK USERNAME
         $check = $conn->prepare("SELECT username FROM user WHERE username = ?");
         $check->bind_param("s", $username);
         $check->execute();
@@ -29,9 +33,10 @@ if (isset($_POST['register'])) {
             $msg_class = "error";
         } else {
 
+            // ✅ INSERT CLEAN DATA
             $insert = $conn->prepare(
                 "INSERT INTO user (username, password, email, role, fullname)
-                 VALUES (?, ?, ?, ?)"
+                 VALUES (?, ?, ?, ?, ?)"
             );
 
             $insert->bind_param(
@@ -58,6 +63,7 @@ if (isset($_POST['register'])) {
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
