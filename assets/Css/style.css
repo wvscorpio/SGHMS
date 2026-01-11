@@ -1,0 +1,236 @@
+/* ======================================================
+   SGHMS – PROFESSIONAL HOSPITAL SYSTEM CSS
+   Author: Doctor Module
+   Purpose: Header, Sidebar, Content, Footer
+   ====================================================== */
+
+/* RESET & BASE */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background-color: #f4f7fb;
+    color: #2c2c2c;
+}
+
+/* =========================
+   LAYOUT STRUCTURE
+   ========================= */
+.wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* =========================
+   SIDEBAR (NAVIGATION)
+   ========================= */
+.sidebar {
+    width: 260px;
+    background: linear-gradient(180deg, #0f172a, #1e293b);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar .logo {
+    padding: 24px;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    background: rgba(255,255,255,0.05);
+}
+
+.sidebar nav {
+    flex: 1;
+    padding: 20px;
+}
+
+.sidebar nav a {
+    display: block;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    color: #e5e7eb;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.sidebar nav a:hover {
+    background: rgba(255,255,255,0.15);
+    padding-left: 20px;
+}
+
+.sidebar nav a.active {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+/* =========================
+   HEADER (TOP BAR)
+   ========================= */
+.header {
+    height: 70px;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+}
+
+.header h1 {
+    font-size: 20px;
+    color: #1e293b;
+}
+
+.header .user-info {
+    font-size: 14px;
+    color: #475569;
+}
+
+/* =========================
+   MAIN CONTENT AREA
+   ========================= */
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Page content */
+.content {
+    padding: 30px;
+}
+
+/* =========================
+   CARDS (DASHBOARD / FORMS)
+   ========================= */
+.card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.card-title {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+/* =========================
+   TABLES
+   ========================= */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+table th {
+    background: #1e293b;
+    color: #ffffff;
+    padding: 14px;
+    font-size: 14px;
+}
+
+table td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+table tr:hover {
+    background-color: #f1f5f9;
+}
+
+/* =========================
+   FORMS
+   ========================= */
+form label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+form input,
+form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+}
+
+form button {
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+form button:hover {
+    background: #1d4ed8;
+}
+
+/* =========================
+   STATUS COLORS
+   ========================= */
+.status-pending {
+    color: #b45309;
+    font-weight: bold;
+}
+
+.status-approved {
+    color: #15803d;
+    font-weight: bold;
+}
+
+.status-cancelled {
+    color: #b91c1c;
+    font-weight: bold;
+}
+
+/* =========================
+   FOOTER
+   ========================= */
+.footer {
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    padding: 15px 30px;
+    font-size: 13px;
+    color: #64748b;
+    text-align: center;
+}
+
+/* =========================
+   RESPONSIVE (BASIC)
+   ========================= */
+@media (max-width: 900px) {
+    .sidebar {
+        width: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .wrapper {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+    }
+}
