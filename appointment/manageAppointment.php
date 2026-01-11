@@ -1,8 +1,15 @@
 <?php
+session_start();
 include '../db/dbcon.php';
 
 // ================= UPDATE STATUS ================= //
 if (isset($_POST['appointmentID'], $_POST['status'])) {
+    $validStatuses = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
+    if (!in_array($_POST['status'], $validStatuses)) {
+        echo "invalid_status";
+        exit;
+    }
+
     $stmt = $conn->prepare("UPDATE appointment SET status=? WHERE appointmentID=?");
     $stmt->bind_param("ss", $_POST['status'], $_POST['appointmentID']);
     $stmt->execute();
@@ -57,6 +64,36 @@ if (isset($_POST['create_appointment'])) {
     $patientID = $_POST['patient'];
     $doctorID = $_POST['doctor'];
 
+     // ===== BASIC VALIDATION =====
+    if (empty($_POST['patient']) || empty($_POST['doctor']) || empty($_POST['date']) || empty($_POST['time'])) {
+        $_SESSION['popup'] = "Please fill in all required fields";
+        header("Location: manageAppointment.php");
+        exit();
+    }
+
+    // Tarikh tak boleh lepas
+    if ($_POST['date'] < date('Y-m-d')) {
+        $_SESSION['popup'] = "Invalid date selected";
+        header("Location: manageAppointment.php");
+        exit();
+    }
+
+    // Check slot dah ditempah ke belum
+    $check = $conn->prepare("
+        SELECT * FROM appointment 
+        WHERE doctorID=? AND appointmentDate=? AND appointmentTime=?
+    ");
+    $time = date("H:i:s", strtotime($_POST['time']));
+    $check->bind_param("sss", $_POST['doctor'], $_POST['date'], $time);
+    $check->execute();
+    $res = $check->get_result();
+
+    if ($res->num_rows > 0) {
+        $_SESSION['popup'] = "This time slot is already booked";
+        header("Location: manageAppointment.php");
+        exit();
+    }
+
     $stmt = $conn->prepare("
         INSERT INTO appointment (appointmentID, appointmentDate, appointmentTime, reason, status, patientID, doctorID)
         VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -64,6 +101,7 @@ if (isset($_POST['create_appointment'])) {
     $stmt->bind_param("sssssss", $newID, $date, $time, $reason, $status, $patientID, $doctorID);
     $stmt->execute();
 
+    $_SESSION['popup'] = "Appointment created successfully";
     header("Location: manageAppointment.php");
     exit();
 }
@@ -78,6 +116,35 @@ if (isset($_POST['update_appointment'])) {
     $patientID = $_POST['patient'];
     $doctorID = $_POST['doctor'];
 
+        // ===== BASIC VALIDATION =====
+    if (empty($patientID) || empty($doctorID) || empty($date) || empty($time)) {
+        $_SESSION['popup'] = "Please fill in all required fields";
+        header("Location: manageAppointment.php");
+        exit();
+    }
+
+    // Tarikh tak boleh lepas
+    if ($date < date('Y-m-d')) {
+        $_SESSION['popup'] = "Invalid date selected";
+        header("Location: manageAppointment.php");
+        exit();
+    }
+
+    // Check slot dah ditempah ke belum (exclude current appointment)
+    $check = $conn->prepare("
+        SELECT * FROM appointment 
+        WHERE doctorID=? AND appointmentDate=? AND appointmentTime=? AND appointmentID != ?
+    ");
+    $check->bind_param("ssss", $doctorID, $date, $time, $id);
+    $check->execute();
+    $res = $check->get_result();
+    if ($res->num_rows > 0) {
+        $_SESSION['popup'] = "This time slot is already booked";
+        header("Location: manageAppointment.php");
+        exit();
+    }
+
+    // Kalau lulus semua → update
     $stmt = $conn->prepare("
         UPDATE appointment 
         SET appointmentDate=?, appointmentTime=?, reason=?, status=?, patientID=?, doctorID=? 
@@ -86,6 +153,19 @@ if (isset($_POST['update_appointment'])) {
     $stmt->bind_param("sssssss", $date, $time, $reason, $status, $patientID, $doctorID, $id);
     $stmt->execute();
 
+    $_SESSION['popup'] = "Appointment updated successfully";
+    header("Location: manageAppointment.php");
+    exit();
+
+    $stmt = $conn->prepare("
+        UPDATE appointment 
+        SET appointmentDate=?, appointmentTime=?, reason=?, status=?, patientID=?, doctorID=? 
+        WHERE appointmentID=?
+    ");
+    $stmt->bind_param("sssssss", $date, $time, $reason, $status, $patientID, $doctorID, $id);
+    $stmt->execute();
+
+    $_SESSION['popup'] = "Appointment updated successfully";
     header("Location: manageAppointment.php");
     exit();
 }
@@ -96,6 +176,7 @@ if (isset($_GET['id'])) {
     $stmt->bind_param("s", $_GET['id']);
     $stmt->execute();
 
+    $_SESSION['popup'] = "Appointment deleted successfully";
     header("Location: manageAppointment.php");
     exit();
 }
@@ -141,8 +222,36 @@ function getDoctorTimeSlots($conn, $doctorID, $date){
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Staff Manage Appointments</title>
     <link rel="stylesheet" href="../css/aptstyle.css"/>
+
+    <style>
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #333;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 6px;
+        opacity: 0;
+        animation: fadeInOut 3s forwards;
+        z-index: 9999;
+    }
+
+    @keyframes fadeInOut {
+        0% { opacity: 0; transform: translateY(-10px); }
+        10% { opacity: 1; transform: translateY(0); }
+        90% { opacity: 1; }
+        100% { opacity: 0; transform: translateY(-10px); }
+    }
+    </style>
 </head>
 <body>
+
+<?php if (isset($_SESSION['popup'])): ?>
+    <div class="toast"><?= htmlspecialchars($_SESSION['popup']); ?></div>
+    <?php unset($_SESSION['popup']); ?>
+<?php endif; ?>
+
 <div class = "header">
     <div>
         <h1>Sarawak General Hospital</h1>
@@ -248,7 +357,7 @@ function getDoctorTimeSlots($conn, $doctorID, $date){
                 <td><?= htmlspecialchars($a['patientName']) ?></td>
                 <td><?= htmlspecialchars($a['doctorName']) ?></td>
                 <td><?= $a['appointmentDate'] ?></td>
-                <td><?= date('H:i A', strtotime($a['appointmentTime'])) ?></td>
+                <td><?= date('h:i A', strtotime($a['appointmentTime'])) ?></td>
                 <td>
                     <span class="badge <?= strtolower($a['status']) ?>">
                         <?= htmlspecialchars($a['status']) ?>
@@ -334,6 +443,8 @@ document.querySelectorAll('.status-select').forEach(select => {
                 const badge = this.closest('tr').querySelector('.badge');
                 badge.className = 'badge ' + newStatus.toLowerCase();
                 badge.textContent = newStatus;
+            } else if(response === 'invalid_status') {
+                alert('Invalid status selected');
             } else {
                 alert('Failed to update status');
             }

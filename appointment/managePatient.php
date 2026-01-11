@@ -1,4 +1,5 @@
 <?php
+session_start();
 include '../db/dbcon.php';
 
 /* ===================== SAVE / UPDATE PATIENT ===================== */
@@ -24,6 +25,30 @@ if (isset($_POST['save_patient'])) {
     $gender = $_POST['gender'];
     $contact = $_POST['contactNumber'];
     $history = $_POST['medicalHistory'];
+    
+    // ===== BASIC VALIDATION =====
+    if (empty($name) || empty($age) || empty($gender) || empty($contact) || empty($history)) {
+        $_SESSION['popup'] = "Please fill in all required fields";
+        header("Location: managePatient.php");
+        exit();
+    }
+
+    if (strlen($name) > 100 || strlen($contact) > 255 || strlen($history) > 500) {
+        $_SESSION['popup'] = "Input too long";
+        header("Location: managePatient.php");
+        exit();
+    }
+
+    // Optional: prevent duplicate patient name
+    $check = $conn->prepare("SELECT * FROM patient WHERE name=? AND patientID!=?");
+    $check->bind_param("ss", $name, $id);
+    $check->execute();
+    $res = $check->get_result();
+    if ($res->num_rows > 0) {
+        $_SESSION['popup'] = "Patient with this name already exists";
+        header("Location: managePatient.php");
+        exit();
+    }
 
     if ($id) {
         // UPDATE
@@ -34,6 +59,7 @@ if (isset($_POST['save_patient'])) {
         ");
         $stmt->bind_param("sissss", $name, $age, $gender, $contact, $history, $id);
         $stmt->execute();
+        $_SESSION['popup'] = "Patient profile updated successfully";
     } else {
         // INSERT
         $newID = generatePatientID($conn);
@@ -44,6 +70,7 @@ if (isset($_POST['save_patient'])) {
         ");
         $stmt->bind_param("ssisss", $newID, $name, $age, $gender, $contact, $history);
         $stmt->execute();
+        $_SESSION['popup'] = "Patient profile created successfully";
     }
 
     header("Location: managePatient.php");
@@ -56,6 +83,7 @@ if (isset($_GET['delete_patient'])) {
     $stmt->bind_param("s", $_GET['delete_patient']);
     $stmt->execute();
 
+    $_SESSION['popup'] = "Patient profile deleted successfully";
     header("Location: managePatient.php");
     exit;
 }
@@ -71,9 +99,36 @@ $patients = $conn->query("SELECT * FROM patient")->fetch_all(MYSQLI_ASSOC);
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Staff Manage Appointments</title>
         <link rel="stylesheet" href="../css/patStyle.css"/>
+        <style>
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 6px;
+            opacity: 0;
+            animation: fadeInOut 3s forwards;
+            z-index: 9999;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-10px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(-10px); }
+        }
+        </style>
     </head>
 
     <body>
+
+        <?php if (isset($_SESSION['popup'])): ?>
+            <div class="toast"><?= htmlspecialchars($_SESSION['popup']); ?></div>
+            <?php unset($_SESSION['popup']); ?>
+        <?php endif; ?>
+
         <div class = "header">
             <div>
                 <h1>Sarawak General Hospital</h1>

@@ -1,4 +1,5 @@
 <?php
+session_start();
 include '../db/dbcon.php';
 
 // ===================== CREATE / UPDATE DOCTOR ===================== //
@@ -23,6 +24,31 @@ if (isset($_POST['save_doctor'])) {
     $specialization = $_POST['specialization'];
     $contact = $_POST['contactDetails'];
 
+    // ===== BASIC VALIDATION =====
+    if (empty($name) || empty($specialization) || empty($contact)) {
+        $_SESSION['popup'] = "Please fill in all required fields";
+        header("Location: manageDoctor.php");
+        exit();
+    }
+
+    // Optional: limit length
+    if (strlen($name) > 100 || strlen($contact) > 255) {
+        $_SESSION['popup'] = "Input too long";
+        header("Location: manageDoctor.php");
+        exit();
+    }
+
+    // Optional: prevent duplicate name
+    $check = $conn->prepare("SELECT * FROM doctor WHERE name=? AND doctorID!=?");
+    $check->bind_param("ss", $name, $id);
+    $check->execute();
+    $res = $check->get_result();
+    if ($res->num_rows > 0) {
+        $_SESSION['popup'] = "Doctor with this name already exists";
+        header("Location: manageDoctor.php");
+        exit();
+    }
+
     if ($id) {
         // UPDATE
         $stmt = $conn->prepare("
@@ -32,6 +58,7 @@ if (isset($_POST['save_doctor'])) {
         ");
         $stmt->bind_param("ssss", $name, $specialization, $contact, $id);
         $stmt->execute();
+        $_SESSION['popup'] = "Doctor profile updated successfully";
     } else {
         // INSERT
         $newID = generateDoctorID($conn);
@@ -40,6 +67,7 @@ if (isset($_POST['save_doctor'])) {
         ");
         $stmt->bind_param("ssss", $newID, $name, $specialization, $contact);
         $stmt->execute();
+        $_SESSION['popup'] = "Doctor profile created successfully";
     }
 
     header("Location: manageDoctor.php");
@@ -48,11 +76,11 @@ if (isset($_POST['save_doctor'])) {
 
 // ===================== DELETE DOCTOR ===================== //
 if (isset($_GET['delete'])) {
-
     $stmt = $conn->prepare("DELETE FROM doctor WHERE doctorID=?");
     $stmt->bind_param("s", $_GET['delete']);
     $stmt->execute();
 
+    $_SESSION['popup'] = "Doctor profile deleted successfully";
     header("Location: manageDoctor.php");
     exit();
 }
@@ -70,9 +98,37 @@ $doctors = $result->fetch_all(MYSQLI_ASSOC);
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Staff Manage Appointments</title>
         <link rel="stylesheet" href="../css/dctStyle.css"/>
+
+        <style>
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 6px;
+            opacity: 0;
+            animation: fadeInOut 3s forwards;
+            z-index: 9999;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-10px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(-10px); }
+        }
+        </style>
     </head>
 
     <body>
+
+        <?php if (isset($_SESSION['popup'])): ?>
+            <div class="toast"><?= htmlspecialchars($_SESSION['popup']); ?></div>
+            <?php unset($_SESSION['popup']); ?>
+        <?php endif; ?>
+
         <div class = "header">
             <div>
                 <h1>Sarawak General Hospital</h1>
@@ -122,11 +178,17 @@ $doctors = $result->fetch_all(MYSQLI_ASSOC);
                     <label>Specialization<br>
                         <select name="specialization" id="doctorSpecialization" required>
                             <option value="">Select specialization</option>
-                            <option>Cardiology</option>
-                            <option>Neurology</option>
+                            <option>General Practitioner (GP)</option>
                             <option>Pediatrics</option>
+                            <option>Cardiology</option>
+                            <option>Respiratory / Pulmonology</option>
                             <option>Orthopedics</option>
+                            <option>Neurology</option>
                             <option>Dermatology</option>
+                            <option>ENT (Ear, Nose, Throat)</option>
+                            <option>Endocrinology</option>
+                            <option>Gastroenterology</option>
+                            <option>Emergency Medicine</option>
                         </select>
                     </label><br><br>
 
