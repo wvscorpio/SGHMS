@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 03, 2026 at 09:55 AM
+-- Generation Time: Jan 10, 2026 at 01:54 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -28,14 +28,25 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `appointment` (
-  `appointmentID` int(100) NOT NULL,
+  `appointmentID` varchar(10) NOT NULL,
   `appointmentDate` date NOT NULL,
   `appointmentTime` time(6) NOT NULL,
   `reason` varchar(500) NOT NULL,
   `status` varchar(50) NOT NULL,
-  `patientID` int(100) NOT NULL,
-  `doctorID` int(100) NOT NULL
+  `patientID` varchar(10) NOT NULL,
+  `doctorID` varchar(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `appointment`
+--
+
+INSERT INTO `appointment` (`appointmentID`, `appointmentDate`, `appointmentTime`, `reason`, `status`, `patientID`, `doctorID`) VALUES
+('', '2026-01-10', '09:00:00.000000', 'asd', 'Pending', '1', '0'),
+('APT001', '2026-01-10', '16:00:00.000000', 'mdc\r\n', 'Confirmed', '0', '0'),
+('APT002', '2026-01-10', '16:00:00.000000', 'medical checkup', 'Confirmed', 'PAT002', 'DOC001'),
+('APT003', '2026-01-10', '15:00:00.000000', 'x-ray', 'Pending', 'PAT001', 'DOC002'),
+('APT004', '2026-01-23', '08:00:00.000000', 'medical', 'Pending', 'PAT001', 'DOC001');
 
 -- --------------------------------------------------------
 
@@ -44,10 +55,33 @@ CREATE TABLE `appointment` (
 --
 
 CREATE TABLE `doctor` (
-  `doctorID` int(100) NOT NULL,
+  `doctorID` varchar(10) NOT NULL,
   `name` varchar(100) NOT NULL,
   `specialization` varchar(100) NOT NULL,
   `contactDetails` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `doctor`
+--
+
+INSERT INTO `doctor` (`doctorID`, `name`, `specialization`, `contactDetails`) VALUES
+('DOC001', 'Dr. Rizal Shah Alimun', 'Cardiology', '0163556694'),
+('DOC002', 'Dr. Nilam', 'Orthopedics', '0172342728'),
+('DOC003', 'Dr Alima', 'Orthopedics', '01222223456');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `doctor_schedule`
+--
+
+CREATE TABLE `doctor_schedule` (
+  `scheduleID` int(11) NOT NULL,
+  `doctorID` varchar(10) NOT NULL,
+  `dayOfWeek` enum('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
+  `startTime` time NOT NULL,
+  `endTime` time NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -57,13 +91,22 @@ CREATE TABLE `doctor` (
 --
 
 CREATE TABLE `patient` (
-  `patientID` int(100) NOT NULL,
+  `patientID` varchar(10) NOT NULL,
   `name` varchar(500) NOT NULL,
   `age` varchar(100) NOT NULL,
   `gender` varchar(40) NOT NULL,
   `contactNumber` varchar(50) NOT NULL,
   `medicalHistory` varchar(500) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `patient`
+--
+
+INSERT INTO `patient` (`patientID`, `name`, `age`, `gender`, `contactNumber`, `medicalHistory`) VALUES
+('PAT001', 'Anis', '24', 'Female', '0163556695', 'Asthma'),
+('PAT002', 'Nureen', '24', 'Female', '0133137994', 'Eczema'),
+('PAT003', 'Wani', '34', 'Female', '0133137009', 'Asthma');
 
 -- --------------------------------------------------------
 
@@ -107,6 +150,13 @@ ALTER TABLE `doctor`
   ADD PRIMARY KEY (`doctorID`);
 
 --
+-- Indexes for table `doctor_schedule`
+--
+ALTER TABLE `doctor_schedule`
+  ADD PRIMARY KEY (`scheduleID`),
+  ADD KEY `doctorID` (`doctorID`);
+
+--
 -- Indexes for table `patient`
 --
 ALTER TABLE `patient`
@@ -123,22 +173,10 @@ ALTER TABLE `staff`
 --
 
 --
--- AUTO_INCREMENT for table `appointment`
+-- AUTO_INCREMENT for table `doctor_schedule`
 --
-ALTER TABLE `appointment`
-  MODIFY `appointmentID` int(100) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `doctor`
---
-ALTER TABLE `doctor`
-  MODIFY `doctorID` int(100) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `patient`
---
-ALTER TABLE `patient`
-  MODIFY `patientID` int(100) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `doctor_schedule`
+  MODIFY `scheduleID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `staff`

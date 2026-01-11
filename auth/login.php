@@ -1,3 +1,64 @@
+<?php
+ob_start();
+require_once "../db/dbcon.php";
+session_start();
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+    $username = strtolower(trim($_POST['username'] ?? ''));
+    $password = $_POST['password'] ?? '';
+    $selectedRole = strtolower(trim($_POST['role'] ?? ''));
+
+    // 1. Fetch user from DB
+    $stmt = $conn->prepare("SELECT username, password, role, fullname FROM user WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 1) {
+        $user = $result->fetch_assoc();
+        $dbRole = strtolower(trim($user['role']));
+
+        // 2. Verify Password
+        if (password_verify($password, $user['password'])) {
+
+            // 3. Role validation (Matches dropdown selection)
+            if ($selectedRole !== $dbRole) {
+                $_SESSION['login_error'] = "Role mismatch: This account is registered as a " . ucfirst($dbRole);
+                header("Location: login.php");
+                exit;
+            }
+
+            // 4. Set Sessions
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['role']     = $dbRole;
+            $_SESSION['fullname'] = $user['fullname'];
+
+            // 5. Redirect based on role
+            switch ($dbRole) {
+                case "staff":
+                    header("Location: ../appointment/manageAppointment.php");
+                    break;
+                case "doctor":
+                    header("Location: ../doctor/doctorAppointment.php");
+                    break;
+                case "patient":
+                    header("Location: ../patient/patientDashboard.php");
+                    break;
+                default:
+                    header("Location: login.php");
+            }
+            exit;
+        }
+    }
+
+    // Generic error for security
+    $_SESSION['login_error'] = "Invalid username or password";
+    header("Location: login.php");
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,20 +70,25 @@
 
 <div class="container">
     <div class="card">
-
         <h1>Sarawak General Hospital</h1>
         <p class="subtitle">Hospital Management System</p>
 
-        <!-- Tabs -->
         <div class="tabs">
             <button class="tab active">Login</button>
             <a href="register.php" class="tab">Register</a>
         </div>
 
-        <form action="login_process.php" method="POST">
+        <?php if (isset($_SESSION['login_error'])): ?>
+            <p style="color:red; text-align:center; margin-bottom:10px;">
+                <?= htmlspecialchars($_SESSION['login_error']) ?>
+            </p>
+            <?php unset($_SESSION['login_error']); ?>
+        <?php endif; ?>
 
+        <form action="login.php" method="POST">
             <label>Role</label>
             <select name="role" required>
+                <option value="">-- Select Role --</option>
                 <option value="patient">Patient</option>
                 <option value="doctor">Doctor</option>
                 <option value="staff">Staff</option>
@@ -34,19 +100,11 @@
             <label>Password</label>
             <div class="password-wrapper">
                 <input type="password" name="password" id="password" required>
-                <button type="button" class="toggle-password" onclick="togglePassword()">
-                    <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path class="eye-open" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle class="eye-open" cx="12" cy="12" r="3"></circle>
-                        <path class="eye-closed" d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                        <line class="eye-closed" x1="1" y1="1" x2="23" y2="23"></line>
-                    </svg>
-                </button>
+                <button type="button" class="toggle-password" onclick="togglePassword()"></button>
             </div>
 
             <button type="submit" class="login-btn">Login</button>
         </form>
-
     </div>
 </div>
 
@@ -54,14 +112,8 @@
 function togglePassword() {
     const passwordInput = document.getElementById('password');
     const toggleBtn = document.querySelector('.toggle-password');
-    
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        toggleBtn.classList.add('showing');
-    } else {
-        passwordInput.type = 'password';
-        toggleBtn.classList.remove('showing');
-    }
+    passwordInput.type = (passwordInput.type === 'password') ? 'text' : 'password';
+    toggleBtn.classList.toggle('showing');
 }
 </script>
 
