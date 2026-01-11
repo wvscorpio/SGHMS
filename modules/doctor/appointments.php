@@ -14,36 +14,32 @@ $message = "";
 
 /* =========================
    HANDLE STATUS UPDATE
-   ========================= */
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
+========================= */
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['appointmentID'], $_POST['status'])) {
     $appointmentID = $_POST['appointmentID'];
-    $newStatus     = $_POST['status'];
+    $status = $_POST['status'];
 
-    $updateSql = "
-        UPDATE appointment
-        SET status = ?
-        WHERE appointmentID = ?
-          AND doctorID = ?
-    ";
-    $stmt = $conn->prepare($updateSql);
-    $stmt->bind_param("sss", $newStatus, $appointmentID, $doctorID);
-    $stmt->execute();
+    $stmt = $conn->prepare(
+        "UPDATE appointment SET status=? WHERE appointmentID=? AND doctorID=?"
+    );
+    $stmt->bind_param("sss", $status, $appointmentID, $doctorID);
 
-    $message = "Appointment status updated.";
+    if ($stmt->execute()) {
+        $message = "Status updated successfully.";
+    }
+
+    $stmt->close();
 }
 
 /* =========================
    FETCH APPOINTMENTS
-   ========================= */
-$sql = "
-    SELECT appointmentID, appointmentDate, appointmentTime,
-           reason, status
-    FROM appointment
-    WHERE doctorID = ?
-    ORDER BY appointmentDate, appointmentTime
-";
-$stmt = $conn->prepare($sql);
+========================= */
+$stmt = $conn->prepare(
+    "SELECT appointmentID, appointmentDate, appointmentTime, reason, status
+     FROM appointment
+     WHERE doctorID = ?
+     ORDER BY appointmentDate DESC"
+);
 $stmt->bind_param("s", $doctorID);
 $stmt->execute();
 $appointments = $stmt->get_result();
@@ -52,25 +48,14 @@ $appointments = $stmt->get_result();
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Doctor Appointments</title>
-   <link rel="stylesheet" href="../../assets/css/style.css">
-
+    <title>Manage Appointments</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: #f4f6f9;
-            padding: 20px;
-        }
-        .container {
-            background: #fff;
-            padding: 20px;
-            width: 800px;
-            border-radius: 8px;
         }
         table {
-            width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            width: 100%;
         }
         table, th, td {
             border: 1px solid #ccc;
@@ -79,21 +64,35 @@ $appointments = $stmt->get_result();
             padding: 8px;
             text-align: center;
         }
+
+        /* STATUS BADGES */
+        .status {
+            padding: 5px 10px;
+            border-radius: 15px;
+            color: #fff;
+            font-size: 13px;
+            display: inline-block;
+        }
+        .pending { background-color: #f0ad4e; }
+        .confirmed { background-color: #0275d8; }
+        .completed { background-color: #5cb85c; }
+        .cancelled { background-color: #d9534f; }
+
         .msg {
             color: green;
         }
-        button {
+        button, select {
             padding: 4px 8px;
         }
     </style>
 </head>
+
 <body>
 
 <div class="container">
+    <h2>Manage Appointments</h2>
 
-    <h2>My Appointments</h2>
-
-    <?php if ($message != ""): ?>
+    <?php if ($message): ?>
         <p class="msg"><?= htmlspecialchars($message) ?></p>
     <?php endif; ?>
 
@@ -103,7 +102,7 @@ $appointments = $stmt->get_result();
             <th>Time</th>
             <th>Reason</th>
             <th>Status</th>
-            <th>Action</th>
+            <th>Actions</th>
         </tr>
 
         <?php if ($appointments->num_rows > 0): ?>
@@ -112,19 +111,34 @@ $appointments = $stmt->get_result();
                     <td><?= htmlspecialchars($row['appointmentDate']) ?></td>
                     <td><?= htmlspecialchars($row['appointmentTime']) ?></td>
                     <td><?= htmlspecialchars($row['reason']) ?></td>
-                    <td><?= htmlspecialchars($row['status']) ?></td>
+
+                    <!-- STATUS DISPLAY (4 STATES) -->
+                    <td>
+                        <?php
+                        $status = $row['status'];
+                        if ($status === 'Pending') {
+                            echo '<span class="status pending">Pending</span>';
+                        } elseif ($status === 'Approved' || $status === 'Confirmed') {
+                            echo '<span class="status confirmed">Confirmed</span>';
+                        } elseif ($status === 'Completed') {
+                            echo '<span class="status completed">Completed</span>';
+                        } elseif ($status === 'Cancelled') {
+                            echo '<span class="status cancelled">Cancelled</span>';
+                        }
+                        ?>
+                    </td>
+
+                    <!-- ACTIONS (UNCHANGED LOGIC) -->
                     <td>
                         <?php if ($row['status'] === 'Pending'): ?>
                             <form method="post" style="display:inline;">
-                                <input type="hidden" name="appointmentID"
-                                       value="<?= $row['appointmentID'] ?>">
+                                <input type="hidden" name="appointmentID" value="<?= $row['appointmentID'] ?>">
                                 <input type="hidden" name="status" value="Approved">
                                 <button type="submit">Approve</button>
                             </form>
 
                             <form method="post" style="display:inline;">
-                                <input type="hidden" name="appointmentID"
-                                       value="<?= $row['appointmentID'] ?>">
+                                <input type="hidden" name="appointmentID" value="<?= $row['appointmentID'] ?>">
                                 <input type="hidden" name="status" value="Cancelled">
                                 <button type="submit">Cancel</button>
                             </form>
@@ -143,7 +157,6 @@ $appointments = $stmt->get_result();
 
     <br>
     <a href="dashboard.php">← Back to Dashboard</a>
-
 </div>
 
 </body>
