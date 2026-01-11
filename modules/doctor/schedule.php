@@ -3,13 +3,22 @@
 // Use Case: UC-3 Manage Doctor Information (Update Availability)
 
 session_start();
+
+/* ✅ ADDED: login + role protection ONLY */
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'doctor') {
+    header("Location: ../auth/login.php");
+    exit;
+}
+
 require_once "../../db/dbcon.php";
 
 /*
  TEMP SETUP (for testing only)
  Later this will come from login
 */
-$doctorID = "DOC001";
+
+/* ✅ ADDED: use session doctorID if exists, else TEMP */
+$doctorID = $_SESSION['doctorID'] ?? "DOC001";
 
 $message = "";
 

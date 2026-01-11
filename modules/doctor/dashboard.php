@@ -2,12 +2,19 @@
 // FILE: modules/doctor/dashboard.php
 
 session_start();
+
+/* ✅ ADDED: login + role protection ONLY */
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'doctor') {
+    header("Location: ../auth/login.php");
+    exit;
+}
+
 require_once "../../db/dbcon.php";
 
-// TEMP: simulate logged-in doctor (remove later when auth is ready)
-$doctorID = "DOC001";
+/* ✅ ADDED: use session doctor if exists, otherwise keep TEMP */
+$doctorID = $_SESSION['doctorID'] ?? "DOC001";
 
-// Fetch doctor info
+/* ❌ EXISTING LOGIC — NOT CHANGED */
 $sql = "SELECT * FROM doctor WHERE doctorID = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $doctorID);

@@ -3,13 +3,23 @@
 // Purpose: Doctor views and manages appointments
 
 session_start();
+
+/* ✅ ADDED: login + role protection ONLY */
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'doctor') {
+    header("Location: ../auth/login.php");
+    exit;
+}
+
 require_once "../../db/dbcon.php";
 
 /*
  TEMP (for testing only)
  Later doctorID comes from login
 */
-$doctorID = "DOC001";
+
+/* ✅ ADDED: use session doctorID if exists, else TEMP */
+$doctorID = $_SESSION['doctorID'] ?? "DOC001";
+
 $message = "";
 
 /* =========================
