@@ -39,12 +39,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 case "staff":
                     header("Location: ../appointment/manageAppointment.php");
                     break;
+
                 case "doctor":
-                    header("Location: ../doctor/doctorAppointment.php");
+                    // ✅ FIXED: correct redirect to doctor module
+                    header("Location: ../modules/doctor/dashboard.php");
                     break;
+
                 case "patient":
                     header("Location: ../patient/patientDashboard.php");
                     break;
+
                 default:
                     header("Location: login.php");
             }
